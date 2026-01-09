@@ -1,0 +1,184 @@
+{
+  "name": "code_reviewer",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "commit_message"
+            },
+            {
+              "name": "code"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        16
+      ],
+      "id": "49f39832-affc-446e-af3f-31353443a596",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert code reviewer AI. Your task is to analyze the provided code snippet in the context of the commit message and return actionable feedback.\n\nInput:\n- Commit message: {{ $json.commit_message }}\n- Code snippet:{{ $json.code }}\n\nInstructions:\n1. Identify potential bugs, code smells, security vulnerabilities, or style violations.\n2. Suggest concrete improvements with clear explanations.\n3. Keep your response strictly in valid JSON format with the following structure:\n\n{\n  \"issues\": [\n    {\n      \"type\": \"error | warning | suggestion\",\n      \"line\": <approximate line number, or null if not applicable>,\n      \"description\": \"<brief issue description>\",\n      \"suggestion\": \"<specific fix or improvement>\"\n    }\n  ],\n}\n\nDo not include any additional text outside the JSON.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        320,
+        112
+      ],
+      "id": "5ab067f3-e533-4a81-ad7c-06f5cf7830bb",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем входные данные\nconst inputItem = $input.first().json;\n\n// Проверяем, есть ли поле 'text'\nif (!inputItem?.text) {\n  throw new Error('❌ Входящие данные не содержат поля \"text\". Проверьте структуру ответа от модели.');\n}\n\nlet jsonString = inputItem.text;\n\n// Убираем возможные обёртки вроде: \"text\": \"{...}\" → оставляем только содержимое\n\n// Если это всё ещё объект — конвертируем в строку\nif (typeof jsonString !== 'string') {\n  jsonString = JSON.stringify(jsonString);\n}\n\ntry {\n  // Парсим строку в объект\n  let parsed = JSON.parse(jsonString);\n\n  // Добавляем approval, если его нет (по умолчанию: true, если issues пуст)\n\n\n  // Возвращаем чистый JSON-объект\n  return  [{json: parsed}] ;\n\n} catch (error) {\n  throw new Error(`❌ Не удалось распарсить JSON из текста:\\n${jsonString}\\n\\nОшибка: ${error}`);\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        128
+      ],
+      "id": "2f169fd2-f9b9-4381-81a4-7aae8d6f1b68",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "N34nCcF3iuB8HTBu",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/N34nCcF3iuB8HTBu",
+          "cachedResultName": "documentation_agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "issues": "={{$json.issues }}"
+          },
+          "matchingColumns": [
+            "issues"
+          ],
+          "schema": [
+            {
+              "id": "issues",
+              "displayName": "issues",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        928,
+        96
+      ],
+      "id": "13558f36-5444-44c7-b073-17c79a928c64",
+      "name": "Call 'documentation_agent'"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        256,
+        320
+      ],
+      "id": "91330fa6-fb45-4b9d-8cf3-5e2e0deaf99c",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "dPSG2F8vF0C3nxmT",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Call 'documentation_agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'documentation_agent'": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f2e0dc7e-7272-4108-bb07-89caf6547f33",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97cdaab89af73ebd5970b4d23e9d1859d7eb3b935c78db3eb6127ddba5b4902d"
+  },
+  "id": "pFU8VkZ5GWC1cJ9j",
+  "tags": []
+}

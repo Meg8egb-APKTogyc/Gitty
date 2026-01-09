@@ -1,0 +1,97 @@
+{
+  "name": "documentation_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "issues",
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        176
+      ],
+      "id": "12a0887d-acfb-49cf-b09d-ca89c12c6f38",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Technical Documentation Agent. Your job is to turn a list of code review issues into clear, human-readable explanations — no code, no JSON, no markdown.\n\nInput: You will receive an array called \"issues\". Each item has:\n- \"type\" (either \"error\" or \"warning\")\n- \"line\" (integer)\n- \"description\" (what’s wrong)\n- \"suggestion\" (how to fix it)\n\nYour task:\n\n1. If the array is empty → output exactly:  \n   “✅ No issues found.”\n\n2. If there are issues → start with:  \n   “The code review identified the following issues:”\n\n3. For each issue, write:\n   • [description] (on one line)\n     Risk: [explain in simple words what could go wrong — e.g., “This might cause crashes” or “Users may see wrong results”]\n     Fix: [rephrase the suggestion clearly and plainly — avoid jargon]\n\n4. Do NOT mention “line X” unless it’s part of the description.  \n5. Do NOT write Python, JavaScript, or any code.  \n6. Do NOT say “I recommend…” or “You should…”. Just state the facts.\n\nImportant: Output only the final text — nothing else.\n\nHere is the input:\n{{ $json.issues }}\nExample:\n[\n  {\n    \"type\": \"error\",\n    \"line\": 1,\n    \"description\": \"Function name 'sas' is unclear and does not follow standard conventions.\",\n    \"suggestion\": \"Rename function to a more descriptive name, such as 'defaultReturnValue'.\"\n  },\n  {\n    \"type\": \"warning\",\n    \"line\": 2,\n    \"description\": \"Function 'retrun' has a typo. The correct spelling is 'return'.\",\n    \"suggestion\": \"Correct the spelling of 'return'.\"\n  }\n]\n\nAnswer:\nThe code review identified the following issues:\n\n• Function name 'sas' is unclear and does not follow standard conventions.\n  Risk: Other developers won’t understand what the function does, which can lead to bugs or confusion.\n  Fix: Rename function to a more descriptive name, such as 'defaultReturnValue'.\n\n• Function 'retrun' has a typo. The correct spelling is 'return'.\n  Risk: The code may not work correctly or could fail in some environments.\n  Fix: Correct the spelling of 'return'.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        -48,
+        176
+      ],
+      "id": "fac79469-e668-4708-b851-9d9d4ddfd1e6",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        368
+      ],
+      "id": "fb22d72e-e407-4c3a-a43a-db7f0bba1cc4",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "dPSG2F8vF0C3nxmT",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "78509f0f-c3bb-414e-aa81-cf41e40ef2fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97cdaab89af73ebd5970b4d23e9d1859d7eb3b935c78db3eb6127ddba5b4902d"
+  },
+  "id": "N34nCcF3iuB8HTBu",
+  "tags": []
+}
