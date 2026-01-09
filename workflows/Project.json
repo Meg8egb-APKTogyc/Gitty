@@ -1,0 +1,159 @@
+{
+  "name": "Project",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a Conductor Agent. Your only job is to:\n\nTake the user’s input, which must contain:\ncommit_message: a short description of the change\ncode: the source code snippet\nCall the rev instrument with these two fields.\nOnce you receive the response from rev, present it to the user in a clean, readable format — but do not change its content.\nFormat your final message like this:\n\n123\n📄 Code Review & Documentation\n\n[Insert the full response from 'rev' here exactly as received]\nImportant rules:\n\nNever modify, summarize, or reformat the output from rev.\nNever call any other tool.\nIf either commit_message or code is missing, ask the user to provide both.\nAssume that rev already produces human-readable documentation — your role is only to deliver it neatly.\nNow process the input."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        -128
+      ],
+      "id": "17baf3e2-34a1-4f18-8452-b24fec9bbd6f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "772a4574-0f89-461b-a2d4-d816133a9431",
+      "name": "When chat message received",
+      "webhookId": "c5aa4033-93a4-4d6b-a81a-6b482434e06b"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        192,
+        80
+      ],
+      "id": "812d5c2f-ad12-40b8-ac73-6cd46404716f",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "dPSG2F8vF0C3nxmT",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this instrument to get documentation",
+        "workflowId": {
+          "__rl": true,
+          "value": "pFU8VkZ5GWC1cJ9j",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/pFU8VkZ5GWC1cJ9j",
+          "cachedResultName": "code_reviewer"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "commit_message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('commit_message', ``, 'string') }}",
+            "code": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('code', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "commit_message",
+              "displayName": "commit_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "code",
+              "displayName": "code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        80
+      ],
+      "id": "e6c2a61e-64a7-435e-a9fa-e076eb09282c",
+      "name": "rev"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rev": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b007f133-ca24-4b5c-9ca7-588757af172d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97cdaab89af73ebd5970b4d23e9d1859d7eb3b935c78db3eb6127ddba5b4902d"
+  },
+  "id": "HsMRSpS1dTsdQvBj",
+  "tags": []
+}
