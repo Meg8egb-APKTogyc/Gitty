@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+telegram:
+  bot-token: ${TELEGRAM_BOT_TOKEN}
+
+n8n:
+  webhook-url: ${N8N_WEBHOOK_URL:http://localhost:5678/webhook/test-message}
+
+logging:
+  level:
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    dev.gitty: DEBUG

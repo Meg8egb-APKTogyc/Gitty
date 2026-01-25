@@ -2,10 +2,13 @@ spring:
   application:
     name: gitty
 
+  profiles:
+    active: dev
+
   datasource:
-    url: jdbc:h2:mem:gittydb
+    url: jdbc:h2:mem:gittydb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
-    password:
+    password: ""
     driver-class-name: org.h2.Driver
 
   jpa:
@@ -15,11 +18,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-
-  sql:
-    init:
-      mode: always
 
 server:
   port: 8080
@@ -27,6 +25,5 @@ server:
 logging:
   level:
     dev.gitty: DEBUG
-    org.springframework: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

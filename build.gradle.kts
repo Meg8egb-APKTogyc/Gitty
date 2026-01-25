@@ -20,6 +20,7 @@ java {
 
 repositories {
 	mavenCentral()
+	maven(url = "https://jitpack.io")
 }
 
 dependencies {
@@ -27,18 +28,29 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 
-	// Kotlin
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-	// Database
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
 
-	// Dev
+	implementation("org.flywaydb:flyway-core")
+
+	configurations.all {
+		exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+		exclude(group = "ch.qos.logback", module = "logback-classic")
+	}
+
+	implementation("org.apache.logging.log4j:log4j-core:2.25.3")
+	implementation("org.apache.logging.log4j:log4j-api:2.25.1")
+	implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.1")
+	implementation("org.apache.logging.log4j:log4j-jul:2.25.1")
+	implementation("org.apache.logging.log4j:log4j-layout-template-json:2.25.1")
+
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-	// Testing - В Spring Boot 4.x тестовые зависимости без -test суффикса
+	implementation("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.1.0")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
@@ -46,6 +58,7 @@ dependencies {
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24)
 	}
 }
 
@@ -57,4 +70,12 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.withType<Jar> {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

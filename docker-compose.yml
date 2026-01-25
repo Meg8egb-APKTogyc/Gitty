@@ -1,8 +1,30 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: gitty-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gitty
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gitty-network
+
   n8n:
-    image: n8nio/n8n
+    image: n8nio/n8n:latest
     container_name: n8n-gitty
     restart: unless-stopped
     ports:
@@ -14,8 +36,7 @@ services:
       - N8N_HOST=localhost
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - N8N_WEBHOOK_URL=http://localhost:5678
-      - WEBHOOK_URL=http://localhost:5678
+      - N8N_WEBHOOK_URL=http://n8n:5678
       - N8N_METRICS=false
       - N8N_LOG_LEVEL=info
       - DB_TYPE=sqlite
@@ -23,13 +44,36 @@ services:
       - EXECUTIONS_DATA_PRUNE=true
       - EXECUTIONS_DATA_MAX_AGE=168
       - GENERIC_TIMEZONE=Europe/Moscow
+      - OLLAMA_HOST=ollama:11434
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
-      - n8n-network
+      - gitty-network
+    depends_on:
+      - ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - gitty-network
+    command: serve
 
 volumes:
+  postgres_data:
   n8n_data:
+  ollama_data:
 
 networks:
-  n8n-network:
+  gitty-network:
+    driver: bridge

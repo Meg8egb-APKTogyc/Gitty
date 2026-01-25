@@ -1,18 +1,6 @@
 package dev.gitty.model
 
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Column
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinTable
-import jakarta.persistence.ManyToMany
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
+import jakarta.persistence.*
 import java.time.Instant
 
 @Entity
@@ -20,19 +8,20 @@ import java.time.Instant
 data class Repository(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     val id: Long = 0,
 
     @Column(name = "github_repo_id", nullable = false, unique = true)
     val githubRepoId: String,
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     val name: String,
 
     @Column(name = "owner_name", nullable = false)
     val ownerName: String,
 
     @Column(name = "webhook_id")
-    val webhookId: String? = null,
+    var webhookId: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -51,4 +40,8 @@ data class Repository(
         inverseJoinColumns = [JoinColumn(name = "user_id")]
     )
     val teamMembers: MutableSet<User> = mutableSetOf()
-)
+) {
+    fun getFullName(): String = "$ownerName/$name"
+
+    fun hasWebhook(): Boolean = webhookId != null
+}

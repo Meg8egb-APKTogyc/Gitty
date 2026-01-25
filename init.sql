@@ -1,0 +1,1 @@
+CREATE DATABASE gitty_test;

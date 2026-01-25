@@ -1,16 +1,6 @@
 package dev.gitty.model
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Column
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
+import jakarta.persistence.*
 import java.time.Instant
 
 @Entity
@@ -45,7 +35,6 @@ data class GitCommit(
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
-    // Для хранения результатов анализа
     @Column(name = "code_quality_score")
     val codeQualityScore: Int? = null,
 
@@ -63,7 +52,10 @@ data class GitCommit(
     val reportPath: String? = null,
 
     @Column(name = "uml_diagram_path")
-    val umlDiagramPath: String? = null
+    val umlDiagramPath: String? = null,
+
+    @Column(name = "analysis_report", columnDefinition = "TEXT")
+    val analysisReport: String? = null
 )
 
 enum class AnalysisStatus {
